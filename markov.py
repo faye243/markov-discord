@@ -2,6 +2,8 @@
 
 import sys
 from random import choice
+import discord 
+import os 
 
 
 def open_and_read_file(filenames):
@@ -21,7 +23,7 @@ def make_chains(text_string):
 
     chains = {}
 
-    words = text_string.split()
+    words = text_string.split() 
     for i in range(len(words) - 2):
         key = (words[i], words[i + 1])
         value = words[i + 2]
@@ -68,3 +70,38 @@ text = open_and_read_file(filenames)
 
 # Get a Markov chain
 chains = make_chains(text)
+
+new_text = make_text(chains) 
+if len(new_text) > 2000:
+    new_text = new_text[0:2000]
+
+
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = discord.Client(intents=intents)
+
+@client.event
+async def on_ready():
+    print(f'We have logged in as {client.user}')
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    if message.content.startswith('$hello'):
+        await message.channel.send('Hello!')
+
+    if message.content.startswith('How are you feeling right now?'):
+        await message.channel.send('I am feeling spectacular!')
+
+    if message.content.startswith('How about a better story?'):
+        await message.channel.send(new_text)
+
+    if message.content.startswith('Chatty_bot, would you like to reveal your identity?'):
+        await message.channel.send("https://github.com/faye243/markov-discord")
+        
+
+client.run(os.environ['DISCORD_TOKEN']) 
